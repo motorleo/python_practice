@@ -52,8 +52,7 @@ for url in urls:
     #do something
     getQuestion(base + url)
     print 'Want to see more questions?'
-    print '(Empty for yes,q for exit):'
-    ifExit = raw_input()
+    ifExit = raw_input('(Empty for yes,q for exit):')
     if ifExit == 'q':
         break
 print 'No more question!'
