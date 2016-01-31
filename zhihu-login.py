@@ -30,12 +30,14 @@ class Zhihu:
                 print e.reason
             exit()
         self.result = self.opener.open("https://www.zhihu.com/")
+        print self.result.read()
         self.soup = BeautifulSoup(self.result.read())
 
     def printQuestion(self):
         for tag in self.soup.find_all('div',
                 class_=['feed-item','folding','feed-item-hook']):
-            if tag['data-feedtype'] == 'QUESTION_FOLLOW':
+            if tag['data-feedtype'] == 'QUESTION_FOLLOW' or\
+                    tag['data-feedtype'] == 'QUESTION_CREATE':
                 continue
             print '-----------------------------------------------------------------'
             print '*****************************************************************'
@@ -67,7 +69,7 @@ class Zhihu:
 
     def start(self):
         self.getPage()
-        self.printQuestion()
+        #self.printQuestion()
 
 if len(sys.argv) < 3:
     print 'Plaese enter the email and password.'
