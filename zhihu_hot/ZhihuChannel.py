@@ -37,6 +37,7 @@ class ZhihuChannel:
             }
         self.queue = queue
         self.urlset = Set()
+        self.exiting = False
 
     def getOpen(self,url):
         logging.info('Trying to open URL:{}'.format(url))

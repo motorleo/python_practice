@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from sets import Set
+import logging
 import sys
 import cookielib
 import urllib
@@ -16,8 +17,8 @@ class Zhihu:
         cookie = cookielib.CookieJar()
         self.opener = urllib2.build_opener(
                 urllib2.HTTPCookieProcessor(cookie))
-        password = ''
-        email = ''
+        password = 'llc372101'
+        email = '79174971@qq.com'
         logindata = urllib.urlencode({
             "_xsrf":"2cec849bfdc0744a4936d508a2a6d16b",
             "password":'llc372101',
@@ -25,7 +26,7 @@ class Zhihu:
             "email":'79174971@qq.com'
             })
         response = self.opener.open(loginUrl,logindata)
-        print response.read().decode('unicode-escape')
+        print type(response.read().decode('unicode-escape'))
         self.headers = {"Accept":"*/*",
             "Accept-Language":"zh-CN,zh;q=0.8",
             "Connection":"keep-alive",
@@ -34,7 +35,7 @@ class Zhihu:
             "Host":"www.zhihu.com",
             "Origin":"https://www.zhihu.com",
             "Referer":"https://www.zhihu.com/",
-            "User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/48.0.2564.82 Chrome/48.0.2564.82 Safari/537.36",
+            "User-Agent":"Mozilla/6.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/48.0.2564.82 Chrome/48.0.2564.82 Safari/537.36",
             "X-Requested-With":"XMLHttpRequest"
             }
         self.topicsUrl = 'https://www.zhihu.com/node/TopicsPlazzaListV2'
@@ -101,7 +102,8 @@ class Zhihu:
             #for each question
             for item in soup.find_all('div',class_='feed-main'):
                 question = item.h2.a.string
-                print question
+                #print question
+                logging.warning(question)
                 vote_up = item.find('span',class_='count').string
                 if 'K' not in vote_up:
                     print vote_up,u'丢弃'
@@ -129,7 +131,6 @@ class Zhihu:
         for topicID in self.ID:
             self.getTopics(topicID)
         self.conn.close()
-        pass
 
 zhihu = Zhihu()
 zhihu.start()

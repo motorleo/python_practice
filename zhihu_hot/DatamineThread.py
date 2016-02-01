@@ -17,10 +17,12 @@ class DatamineThread(threading.Thread):
 
     def run(self):
         self.conn = sqlite3.connect('zhihu.db')
-        while True:
+        while not self.channel.exiting:
             tag = self.queue.get()
             self.datamine(tag)
             self.queue.task_done()
+        logging.info('Exiting')
+        self.jobsDone()
 
     def jobsDone(self):
         self.conn.close()
