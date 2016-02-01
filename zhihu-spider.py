@@ -12,13 +12,11 @@ import sqlite3
 from bs4 import BeautifulSoup
 
 class Zhihu:
-    def __init__(self):
+    def __init__(self,email,password):
         loginUrl = 'https://www.zhihu.com/login/email'
         cookie = cookielib.CookieJar()
         self.opener = urllib2.build_opener(
                 urllib2.HTTPCookieProcessor(cookie))
-        password = 'llc372101'
-        email = '79174971@qq.com'
         logindata = urllib.urlencode({
             "_xsrf":"2cec849bfdc0744a4936d508a2a6d16b",
             "password":'llc372101',
@@ -26,7 +24,7 @@ class Zhihu:
             "email":'79174971@qq.com'
             })
         response = self.opener.open(loginUrl,logindata)
-        print type(response.read().decode('unicode-escape'))
+        print response.read().decode('unicode-escape')
         self.headers = {"Accept":"*/*",
             "Accept-Language":"zh-CN,zh;q=0.8",
             "Connection":"keep-alive",
@@ -103,7 +101,7 @@ class Zhihu:
             for item in soup.find_all('div',class_='feed-main'):
                 question = item.h2.a.string
                 #print question
-                logging.warning(question)
+                print question
                 vote_up = item.find('span',class_='count').string
                 if 'K' not in vote_up:
                     print vote_up,u'丢弃'
@@ -132,5 +130,8 @@ class Zhihu:
             self.getTopics(topicID)
         self.conn.close()
 
-zhihu = Zhihu()
+if len(sys.argv) < 3:
+    print 'Please Enter The Email And Password.'
+    exit()
+zhihu = Zhihu(sys.argv[1],sys.argv[2])
 zhihu.start()

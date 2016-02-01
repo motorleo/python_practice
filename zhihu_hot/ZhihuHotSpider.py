@@ -3,6 +3,7 @@
 
 import Queue
 import logging
+import sys
 from DatamineThread import DatamineThread
 from TagSearcher import TagSearcher
 from ZhihuChannel import ZhihuChannel
@@ -12,7 +13,7 @@ class ZhihuHotSpider:
         logFormat = '%(asctime)s--%(threadName)s : %(message)s'
         logging.basicConfig(level=logging.INFO,format=logFormat)
         queue = Queue.Queue()
-        channel = ZhihuChannel(queue)
+        channel = ZhihuChannel(queue,sys.argv[1],sys.argv[2])
         #build threads
         for i in range(0,threadNum):
             thread = DatamineThread(channel)
@@ -31,6 +32,9 @@ class ZhihuHotSpider:
 
 
 def main():
+    if len(sys.argv) < 3:
+        print 'Please Enter The Email And The Password.'
+        exit()
     spider = ZhihuHotSpider(2)
 
 if __name__ == '__main__':

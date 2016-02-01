@@ -8,16 +8,16 @@ import urllib
 import urllib2
 
 class ZhihuChannel:
-    def __init__(self,queue,email='79174971@qq.com',password='llc372101'):
+    def __init__(self,queue,email,password):
         cookie = cookielib.CookieJar()
         cookie_handler = urllib2.HTTPCookieProcessor(cookie)
         proxy_handler = urllib2.ProxyHandler({'http':'1.60.158.220:9000'})
         self.opener = urllib2.build_opener(cookie_handler,proxy_handler)
         logindata = urllib.urlencode({
             "_xsrf":"2cec849bfdc0744a4936d508a2a6d16b",
-            "password":'llc372101',
+            "password":password,
             "remember_me":"true",
-            "email":'79174971@qq.com'
+            "email":email
             })
         response = self.opener.open('https://www.zhihu.com/login/email',logindata)
         if response is None:
