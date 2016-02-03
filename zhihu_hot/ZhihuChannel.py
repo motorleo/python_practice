@@ -36,26 +36,25 @@ class ZhihuChannel:
             "X-Requested-With":"XMLHttpRequest"
             }
         self.queue = queue
-        self.urlset = Set()
+        self.urlSet = Set()
+        self.topicSet = Set()
         self.exiting = False
 
     def getOpen(self,url):
-        logging.info('Trying to open URL:{}'.format(url))
         request = urllib2.Request(url,headers=self.headers)
         try:
             response = self.opener.open(request)
         except urllib2.HTTPError, e:
-            logging.info('{}'.format(e.code))
+            logging.info('{} :Error opening URL:{}'.format(e.code,url))
             return None
         except urllib2.URLError, e:
-            logging.info('{}  {}'.format(e.code,e.reason))
+            logging.info('{}  {} :Error opening URL:{}'.format(e.code,e.reason,url))
             return None
         else:
-            logging.info('OK')
+            logging.info('Successfully opened URL:{}'.format(url))
             return response
 
     def postOpen(self,url,data):
-        logging.info('Trying to post URL:{}'.format(url))
         request = urllib2.Request(url,data,self.headers)
         try:
             response = self.opener.open(request)
@@ -63,10 +62,10 @@ class ZhihuChannel:
             logging.info('{}'.format(e.code))
             return None
         except urllib2.URLError, e:
-            logging.info('{}  {}'.format(e.code,e.reason))
+            logging.info('{}  {} :Error posting URL:{}'.format(e.code,e.reason,url))
             return None
         else:
-            logging.info('OK')
+            logging.info('Successfully post URL:{}'.format(url))
             return response
 
        

@@ -30,7 +30,7 @@ class Zhihu:
                 print e.reason
             exit()
         self.result = self.opener.open("https://www.zhihu.com/")
-        print self.result.read()
+        #print self.result.read()
         self.soup = BeautifulSoup(self.result.read())
 
     def printQuestion(self):
@@ -53,6 +53,8 @@ class Zhihu:
             #author
             if tag['data-feedtype'] == 'ANSWER_VOTE_UP':
                 author = content.find('div',class_='zm-item-answer-author-info')
+                print author
+                exit()
                 for item in author.stripped_strings:
                     print item,
             print '\n'
@@ -69,7 +71,7 @@ class Zhihu:
 
     def start(self):
         self.getPage()
-        #self.printQuestion()
+        self.printQuestion()
 
 if len(sys.argv) < 3:
     print 'Plaese enter the email and password.'

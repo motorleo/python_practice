@@ -10,8 +10,8 @@ from ZhihuChannel import ZhihuChannel
 
 class ZhihuHotSpider:
     def __init__(self,threadNum):
-        logFormat = '%(asctime)s--%(threadName)s : %(message)s'
-        logging.basicConfig(level=logging.INFO,format=logFormat)
+        logFormat = '%(asctime)s--%(levelname)s--%(threadName)s : %(message)s'
+        logging.basicConfig(filename='zhihu.log',level=logging.INFO,format=logFormat)
         queue = Queue.Queue()
         channel = ZhihuChannel(queue,sys.argv[1],sys.argv[2])
         #build threads
@@ -28,7 +28,7 @@ class ZhihuHotSpider:
         except KeyboardInterrupt:
             channel.exiting = True
             logging.info('Sending Exit Message!')
-        print 'Exiting Main Thread.'
+        logging.info('Exiting Main Thread.')
 
 
 def main():

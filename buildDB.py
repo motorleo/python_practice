@@ -1,5 +1,8 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import sqlite3
+from sets import Set
 
 conn = sqlite3.connect('zhihu.db')
 #cursor = conn.cursor()
@@ -9,16 +12,15 @@ conn = sqlite3.connect('zhihu.db')
 #                    url varchar(100) not null,
 #                    vote_up varchar(10) not null);''')
 
-cursor = conn.execute('''select question,url,vote_up
+cursor = conn.execute('''select url
                        from zhihu;''')
 for item in cursor:
-    print 'question : ',item[0]
-    print 'url : ',item[1]
-    print 'vote_up : ',item[2]
+    print item[0]
+
+#test = Set(cursor.fetchall())
 
 count = conn.execute('''select count(*) from zhihu;''')
-for i in count:
-    print i[0]
+print count.fetchone()[0]
 #conn.execute('''delete from zhihu;''')
 conn.commit()
 conn.close()

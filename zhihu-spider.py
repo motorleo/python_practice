@@ -70,7 +70,8 @@ class Zhihu:
                 if hasattr(e,"reason"):
                     print e.reason
                 break
-            soup = BeautifulSoup(result.read().decode("unicode-escape"))
+            result = result.read().decode('unicode-escape').replace('\\','')
+            soup = BeautifulSoup(result)
             tags = soup.find_all('div',class_='item')
             if len(tags) != 20:
                 hasmore = False
@@ -125,9 +126,13 @@ class Zhihu:
     def start(self):
         self.conn = sqlite3.connect('zhihu.db')
         self.urlset = Set()
-        self.getID()
-        for topicID in self.ID:
-            self.getTopics(topicID)
+        request = urllib2.Request('https://www.zhihu.com/topic/19607076/top-answers',headers=self.headers)
+        test = self.opener.open(request)
+        test = BeautifulSoup(test.read())
+        print test.find('link',rel='canonical')['href']
+        #self.getID()
+        #for topicID in self.ID:
+        #    self.getTopics(topicID)
         self.conn.close()
 
 if len(sys.argv) < 3:

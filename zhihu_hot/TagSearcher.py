@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import logging
 import urllib
 import urllib2
 import Queue
@@ -21,9 +22,10 @@ class TagSearcher:
         #exit when open fail
         response = self.channel.getOpen('https://www.zhihu.com/topics')
         if response is None:
-            print 'Error When Getting ID.'
+            logging.warning('Error When Getting ID.')
             exit()
         IDsoup = BeautifulSoup(response.read())
+        #if error abort
         self.ID = IDsoup.find(
                 'ul',class_='zm-topic-cat-main clearfix').find_all('li')
     
@@ -46,11 +48,13 @@ class TagSearcher:
             result = self.channel.postOpen(topicsUrl,data)
             if result is None:#open fail
                 break
-            soup = BeautifulSoup(result.read().decode("unicode-escape"))
+            result = result.read().decode("unicode-escape").replace('\\','')
+            soup = BeautifulSoup(result)
             tags = soup.find_all('div',class_='item')
             if len(tags) != 20:
                 hasmore = False
             #do datamine(for each tag)
             for tag in tags:
                 self.queue.put(tag) 
+                logging.debug('Putting tag %s in queue.'%(tag.strong.string))
 
