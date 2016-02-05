@@ -17,7 +17,10 @@ cursor = conn.execute('''select url
 for item in cursor:
     print item[0]
 
-#test = Set(cursor.fetchall())
+i = '/question/28808973/answer/42163583'
+test = conn.execute('''select url from zhihu
+                        where url = '{}';'''.format(i))
+print test.fetchall()
 
 count = conn.execute('''select count(*) from zhihu;''')
 print count.fetchone()[0]

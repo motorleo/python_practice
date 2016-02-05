@@ -126,13 +126,9 @@ class Zhihu:
     def start(self):
         self.conn = sqlite3.connect('zhihu.db')
         self.urlset = Set()
-        request = urllib2.Request('https://www.zhihu.com/topic/19607076/top-answers',headers=self.headers)
-        test = self.opener.open(request)
-        test = BeautifulSoup(test.read())
-        print test.find('link',rel='canonical')['href']
-        #self.getID()
-        #for topicID in self.ID:
-        #    self.getTopics(topicID)
+        self.getID()
+        for topicID in self.ID:
+            self.getTopics(topicID)
         self.conn.close()
 
 if len(sys.argv) < 3:

@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from sets import Set
 import logging
 import cookielib
 import urllib
@@ -11,7 +10,7 @@ class ZhihuChannel:
     def __init__(self,queue,email,password):
         cookie = cookielib.CookieJar()
         cookie_handler = urllib2.HTTPCookieProcessor(cookie)
-        proxy_handler = urllib2.ProxyHandler({'http':'1.60.158.220:9000'})
+        proxy_handler = urllib2.ProxyHandler({'http':'182.40.50.201:8090'})
         self.opener = urllib2.build_opener(cookie_handler,proxy_handler)
         logindata = urllib.urlencode({
             "_xsrf":"2cec849bfdc0744a4936d508a2a6d16b",
@@ -36,11 +35,10 @@ class ZhihuChannel:
             "X-Requested-With":"XMLHttpRequest"
             }
         self.queue = queue
-        self.urlSet = Set()
-        self.topicSet = Set()
         self.exiting = False
 
     def getOpen(self,url):
+        logging.info('Opening URL:{}'.format(url))
         request = urllib2.Request(url,headers=self.headers)
         try:
             response = self.opener.open(request)
@@ -55,6 +53,7 @@ class ZhihuChannel:
             return response
 
     def postOpen(self,url,data):
+        logging.info('Posting URL:{}'.format(url))
         request = urllib2.Request(url,data,self.headers)
         try:
             response = self.opener.open(request)

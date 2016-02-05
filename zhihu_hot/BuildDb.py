@@ -5,6 +5,9 @@ import sqlite3
 
 conn = sqlite3.connect('zhihu.db')
 #conn.execute('''drop table zhihu''')
+conn.execute('''create table tagUrlSet
+                    (url varchar(100) not null);''')
+
 conn.execute('''create table zhihu
                     (question varchar(100) not null,
                     url varchar(100) not null,

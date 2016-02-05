@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import time
 import Queue
 import logging
 import sys
@@ -11,7 +12,8 @@ from ZhihuChannel import ZhihuChannel
 class ZhihuHotSpider:
     def __init__(self,threadNum):
         logFormat = '%(asctime)s--%(levelname)s--%(threadName)s : %(message)s'
-        logging.basicConfig(filename='zhihu.log',level=logging.INFO,format=logFormat)
+        #logging.basicConfig(filename='zhihu.log',level=logging.INFO,format=logFormat)
+        logging.basicConfig(level=logging.INFO,format=logFormat)
         queue = Queue.Queue()
         channel = ZhihuChannel(queue,sys.argv[1],sys.argv[2])
         #build threads
@@ -24,7 +26,8 @@ class ZhihuHotSpider:
             tagSearcher = TagSearcher(channel)
             tagSearcher.start()
             #wait for queue's empty
-            queue.join()
+            while not queue.empty():
+                time.sleep(1)
         except KeyboardInterrupt:
             channel.exiting = True
             logging.info('Sending Exit Message!')
@@ -35,7 +38,7 @@ def main():
     if len(sys.argv) < 3:
         print 'Please Enter The Email And The Password.'
         exit()
-    spider = ZhihuHotSpider(2)
+    spider = ZhihuHotSpider(3)#3 thread
 
 if __name__ == '__main__':
     main()

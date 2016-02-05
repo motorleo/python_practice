@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import sqlite3
 import urllib
 import urllib2
 import Queue
@@ -15,6 +16,8 @@ class TagSearcher:
 
     def start(self):
         self.getID()
+        logging.info('Successfully Got ID.')
+        #bulid topicIDSet
         for topicID in self.ID:
             self.searchTag(topicID)
 
