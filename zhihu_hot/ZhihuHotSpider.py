@@ -31,6 +31,9 @@ class ZhihuHotSpider:
         except KeyboardInterrupt:
             channel.exiting = True
             logging.info('Sending Exit Message!')
+        except:
+            channel.exiting = True
+            raise
         logging.info('Exiting Main Thread.')
 
 
@@ -38,7 +41,7 @@ def main():
     if len(sys.argv) < 3:
         print 'Please Enter The Email And The Password.'
         exit()
-    spider = ZhihuHotSpider(3)#3 thread
+    spider = ZhihuHotSpider(1)#n thread
 
 if __name__ == '__main__':
     main()

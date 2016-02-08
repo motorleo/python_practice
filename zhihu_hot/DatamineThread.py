@@ -6,38 +6,41 @@ import sqlite3
 import threading
 import Queue
 from bs4 import BeautifulSoup
+from TagSearcher import TagItem
 
 class DatamineThread(threading.Thread):
     def __init__(self,channel):
         threading.Thread.__init__(self)
         self.channel = channel
         self.queue = channel.queue
+        self.answerUrlSet = channel.answerUrlSet
+        self.tagUrlSet = channel.tagUrlSet
 
     def run(self):
-        self.conn = sqlite3.connect('zhihu.db')
+        self.zhihuConn = sqlite3.connect('zhihu.db')
+        self.tagConn = sqlite3.connect('tagUrlSet.db')
         logging.info('Thread Start Running.')
-        while not self.channel.exiting:
+        self.datamine(TagItem(u'视频网站','https://www.zhihu.com/topic/19552162'))
+        while  self.channel.exiting:
             tag = self.queue.get()
             self.datamine(tag)
             self.queue.task_done()
         logging.info('Exiting.')
-        self.jobsDone()
-
-    def jobsDone(self):
-        self.conn.close()
+        self.zhihuConn.close()
+        self.tagConn.close()
 
     def datamine(self,tag):
+        logging.info('Dealing with tag:%s'%(tag.tagName))
+        if tag.tagUrl in self.tagUrlSet:
+            logging.info('Repeat Tag!')
+            return
         nextPage = True
-        pageHref = 'https://www.zhihu.com' + tag.a['href'].replace('\\','')
         pagenum = 1
-        pageUrl = pageHref + '/top-answers'
-        logging.info('Dealing with tag:%s'%(tag.strong.string))
+        pageUrl = tag.tagUrl + '/top-answers'
         repeatTag = False
         firstPage = True
         #for each page
         while nextPage:
-            if self.channel.exiting:
-                return
             page = self.channel.getOpen(pageUrl)
             if page is None:
                 break
@@ -45,18 +48,20 @@ class DatamineThread(threading.Thread):
             #check rename tag
             if firstPage:
                 firstPage = False
-                tagURL = soup.find('link',rel='canonical')['href']
-                cursor = self.conn.execute('''select url from tagUrlSet
-                                              where url = '%s';'''%(tagURL))
-                if cursor.fetchone() is not None:
-                    logging.info('Repeat Tag!')
-                    repeatTag = True
+                tagUrl = soup.find('link',rel='canonical')['href']
+                if tagUrl != tag.tagUrl:
+                    logging.info('Rename Tag!')
                     break
             #build next pageurl
             pagenum += 1
-            pageUrl = pageHref + '/top-answers?page=%d'%(pagenum)
+            pageUrl = tag.tagUrl + '/top-answers?page=%d'%(pagenum)
             #for each question
-            for item in soup.find_all('div',class_='feed-main'):
+            items = soup.find_all('div',class_='feed-main')
+            if len(items) == 0:
+                nextPage = False
+            for item in items:
+                if self.channel.exiting:
+                    return
                 #question
                 question = item.h2.a.string
                 #href
@@ -67,11 +72,11 @@ class DatamineThread(threading.Thread):
                     href = href['data-entry-url'].replace('\\','')
                 else:
                     continue
-                cursor = self.conn.execute('''select url from zhihu
-                                              where url = '%s';'''%(href))
-                if cursor.fetchone() is not None:
+                if href in self.answerUrlSet:
                     logging.info('%s Drop For Repeat'%(question))
                     continue
+                else:
+                    self.answerUrlSet.add(href)
                 #vote_up
                 vote_up = item.find('span',class_='count')
                 if vote_up is None:
@@ -82,14 +87,15 @@ class DatamineThread(threading.Thread):
                     nextPage = False
                     break
                 #save
-                logging.info('%s  URL:%s  vote_up:%d , ready to save.'%(question,href,vote_up))
-                self.conn.execute('''insert into zhihu
+                self.zhihuConn.execute('''insert into zhihu
                                 values(?,?,?);''',(question,href,vote_up))
-                self.conn.commit()
-                logging.info('%s , Successfully saved!'%(question))
+                self.zhihuConn.commit()
+                logging.info('%s  URL:%s  vote_up:%d,Successfully saved.'%(question,href,vote_up))
         #tag finish
-        if not repeatTag:
-            self.conn.execute('''insert into tagUrlSet values('%s');'''%(pageHref))
-            self.conn.commit()
-            logging.info('Tag:%s is done.'%(tag.strong.string))
+        self.tagUrlSet.add(tag.tagUrl)
+        url = tag.tagUrl.replace("'","''")
+        self.tagConn.execute('''update tagUrlSet set checked = 1
+                                where url = '%s';'''%(url))
+        self.tagConn.commit()
+        logging.info('Tag:%s is done.'%(tag.tagName))
  

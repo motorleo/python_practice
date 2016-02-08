@@ -5,6 +5,7 @@ import logging
 import cookielib
 import urllib
 import urllib2
+import sqlite3
 
 class ZhihuChannel:
     def __init__(self,queue,email,password):
@@ -19,9 +20,6 @@ class ZhihuChannel:
             "email":email
             })
         response = self.opener.open('https://www.zhihu.com/login/email',logindata)
-        if response is None:
-            logging.warning('Error Loginning.')
-            exit()
         print response.read().decode('unicode-escape')
         self.headers = {"Accept":"*/*",
             "Accept-Language":"zh-CN,zh;q=0.8",
@@ -36,35 +34,58 @@ class ZhihuChannel:
             }
         self.queue = queue
         self.exiting = False
+        self.makeSet()
 
     def getOpen(self,url):
         logging.info('Opening URL:{}'.format(url))
         request = urllib2.Request(url,headers=self.headers)
         try:
             response = self.opener.open(request)
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
             logging.info('{} :Error opening URL:{}'.format(e.code,url))
             return None
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             logging.info('{}  {} :Error opening URL:{}'.format(e.code,e.reason,url))
+            return None
+        except:
+            logging.info('Unknow Error opening URL:{}'.format(url))
             return None
         else:
             logging.info('Successfully opened URL:{}'.format(url))
             return response
 
     def postOpen(self,url,data):
-        logging.info('Posting URL:{}'.format(url))
         request = urllib2.Request(url,data,self.headers)
         try:
             response = self.opener.open(request)
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
             logging.info('{}'.format(e.code))
             return None
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             logging.info('{}  {} :Error posting URL:{}'.format(e.code,e.reason,url))
+            return None
+        except:
+            logging.info('Unknow Error opening URL:{}'.format(url))
             return None
         else:
             logging.info('Successfully post URL:{}'.format(url))
             return response
+    
+    def makeSet(self):
+        #answerUrlSet
+        conn = sqlite3.connect('zhihu.db')
+        self.answerUrlSet = set()
+        cursor = conn.execute('''select url from zhihu;''')
+        for url in cursor:
+            self.answerUrlSet.add(url[0])
+        conn.close()
+        #tagUrlSet
+        conn = sqlite3.connect('tagUrlSet.db')
+        self.tagUrlSet = set()
+        cursor = conn.execute('''select url from tagUrlSet
+                                    where checked = 1;''')
+        for url in cursor:
+            self.tagUrlSet.add(url[0])
+        conn.close()
 
        
