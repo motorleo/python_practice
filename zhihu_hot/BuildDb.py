@@ -25,5 +25,5 @@ conn.commit()
 conn.close()
 
 
-os.remove('CurrentSearch.data')
-os.remove('zhihu.log')
+#os.remove('CurrentSearch.data')
+#os.remove('zhihu.log')

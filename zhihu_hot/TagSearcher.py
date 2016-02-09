@@ -107,20 +107,21 @@ class TagSearcher:
             if len(tags) != 20:
                 hasmore = False
             #do datamine(for each tag)
+            self.channel.tagSaveLock.acquire()
             for tag in tags:
                 tagName = tag.strong.string
                 tagUrl = 'https://www.zhihu.com' + tag.a['href'].replace('\\','')
-                self.channel.tagSetLock.acquire()
-                if tagUrl in self.tagUrlSet:
-                    self.channel.tagSetLock.release()
+                cursor = self.conn.execute('''select url from tagUrlSet
+                                               where url = '%s';'''%(tagUrl))
+                if cursor.fetchone() is not None:
                     continue
-                self.channel.tagSetLock.release()
                 self.queue.put(TagItem(tagName,tagUrl)) 
                 self.conn.execute('''insert into tagUrlSet
                                    values(?,?,0);''',(tagName,tagUrl))
                 #logging.debug('Put tag %s in queue.'%(tagName))
             #done
             self.conn.commit()
+            self.channel.tagSaveLock.release()
             time.sleep(0.5)#avoid lock
 
 class TagItem:

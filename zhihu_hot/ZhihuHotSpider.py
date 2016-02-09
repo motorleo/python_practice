@@ -28,6 +28,7 @@ class ZhihuHotSpider:
             #wait for queue's empty
             while not queue.empty():
                 time.sleep(1)
+            logging.info("All Jobs' Done.")
         except KeyboardInterrupt:
             channel.exiting = True
             logging.info('Sending Exit Message!')
@@ -42,7 +43,7 @@ def main():
     if len(sys.argv) < 3:
         print 'Please Enter The Email And The Password.'
         exit()
-    spider = ZhihuHotSpider(6)#n thread
+    spider = ZhihuHotSpider(9)#n thread
 
 if __name__ == '__main__':
     main()
