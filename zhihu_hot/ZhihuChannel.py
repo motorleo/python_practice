@@ -3,9 +3,11 @@
 
 import logging
 import cookielib
+import httplib
 import urllib
 import urllib2
 import sqlite3
+import threading
 
 class ZhihuChannel:
     def __init__(self,queue,email,password):
@@ -35,41 +37,50 @@ class ZhihuChannel:
         self.queue = queue
         self.exiting = False
         self.makeSet()
+        self.answerSetLock = threading.Lock()
+        self.answerSaveLock = threading.Lock()
+        self.tagSetLock = threading.Lock()
+        self.tagSaveLock = threading.Lock()
 
     def getOpen(self,url):
         logging.info('Opening URL:{}'.format(url))
         request = urllib2.Request(url,headers=self.headers)
         try:
-            response = self.opener.open(request)
+            response = self.opener.open(request,timeout=3).read()
         except urllib2.HTTPError as e:
             logging.info('{} :Error opening URL:{}'.format(e.code,url))
             return None
         except urllib2.URLError as e:
             logging.info('{}  {} :Error opening URL:{}'.format(e.code,e.reason,url))
             return None
+        except httplib.IncompleteRead as e:
+            print 'IncompleteRead Exception.'
+            response = e.partial
         except:
             logging.info('Unknow Error opening URL:{}'.format(url))
             return None
-        else:
-            logging.info('Successfully opened URL:{}'.format(url))
-            return response
+        logging.info('Successfully opened URL:{}'.format(url))
+        return response
 
     def postOpen(self,url,data):
         request = urllib2.Request(url,data,self.headers)
         try:
-            response = self.opener.open(request)
+            response = self.opener.open(request,timeout=3).read()
         except urllib2.HTTPError as e:
             logging.info('{}'.format(e.code))
             return None
         except urllib2.URLError as e:
             logging.info('{}  {} :Error posting URL:{}'.format(e.code,e.reason,url))
             return None
-        except:
+        except httplib.IncompleteRead as e:
+            print 'IncompleteRead Exception.'
+            response = e.partial
+        except Exception as e:
+            print e
             logging.info('Unknow Error opening URL:{}'.format(url))
             return None
-        else:
-            logging.info('Successfully post URL:{}'.format(url))
-            return response
+        logging.info('Successfully post URL:{}'.format(url))
+        return response
     
     def makeSet(self):
         #answerUrlSet

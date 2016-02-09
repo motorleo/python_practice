@@ -12,8 +12,8 @@ from ZhihuChannel import ZhihuChannel
 class ZhihuHotSpider:
     def __init__(self,threadNum):
         logFormat = '%(asctime)s--%(levelname)s--%(threadName)s : %(message)s'
-        #logging.basicConfig(filename='zhihu.log',level=logging.INFO,format=logFormat)
-        logging.basicConfig(level=logging.INFO,format=logFormat)
+        logging.basicConfig(filename='zhihu.log',level=logging.INFO,format=logFormat)
+        #logging.basicConfig(level=logging.DEBUG,format=logFormat)
         queue = Queue.Queue()
         channel = ZhihuChannel(queue,sys.argv[1],sys.argv[2])
         #build threads
@@ -33,6 +33,7 @@ class ZhihuHotSpider:
             logging.info('Sending Exit Message!')
         except:
             channel.exiting = True
+            logging.info('Unknow exception,Sending Exit Message.')
             raise
         logging.info('Exiting Main Thread.')
 
@@ -41,7 +42,7 @@ def main():
     if len(sys.argv) < 3:
         print 'Please Enter The Email And The Password.'
         exit()
-    spider = ZhihuHotSpider(1)#n thread
+    spider = ZhihuHotSpider(6)#n thread
 
 if __name__ == '__main__':
     main()

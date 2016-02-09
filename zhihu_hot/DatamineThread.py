@@ -19,9 +19,7 @@ class DatamineThread(threading.Thread):
     def run(self):
         self.zhihuConn = sqlite3.connect('zhihu.db')
         self.tagConn = sqlite3.connect('tagUrlSet.db')
-        logging.info('Thread Start Running.')
-        self.datamine(TagItem(u'视频网站','https://www.zhihu.com/topic/19552162'))
-        while  self.channel.exiting:
+        while not self.channel.exiting:
             tag = self.queue.get()
             self.datamine(tag)
             self.queue.task_done()
@@ -31,9 +29,15 @@ class DatamineThread(threading.Thread):
 
     def datamine(self,tag):
         logging.info('Dealing with tag:%s'%(tag.tagName))
+        self.channel.tagSetLock.acquire()
+        logging.debug('tagSetLock.')
         if tag.tagUrl in self.tagUrlSet:
+            self.channel.tagSetLock.release()
+            logging.debug('tagSetUnlock.')
             logging.info('Repeat Tag!')
             return
+        self.channel.tagSetLock.release()
+        logging.debug('tagSetUnlock.')
         nextPage = True
         pagenum = 1
         pageUrl = tag.tagUrl + '/top-answers'
@@ -44,7 +48,7 @@ class DatamineThread(threading.Thread):
             page = self.channel.getOpen(pageUrl)
             if page is None:
                 break
-            soup = BeautifulSoup(page.read())
+            soup = BeautifulSoup(page)
             #check rename tag
             if firstPage:
                 firstPage = False
@@ -72,11 +76,17 @@ class DatamineThread(threading.Thread):
                     href = href['data-entry-url'].replace('\\','')
                 else:
                     continue
+                self.channel.answerSetLock.acquire()
+                logging.debug('answerSetLock.')
                 if href in self.answerUrlSet:
                     logging.info('%s Drop For Repeat'%(question))
+                    self.channel.answerSetLock.release()
+                    logging.debug('answerSetUNLock.')
                     continue
                 else:
                     self.answerUrlSet.add(href)
+                self.channel.answerSetLock.release()
+                logging.debug('answerSetUNLock.')
                 #vote_up
                 vote_up = item.find('span',class_='count')
                 if vote_up is None:
@@ -87,15 +97,25 @@ class DatamineThread(threading.Thread):
                     nextPage = False
                     break
                 #save
+                self.channel.answerSaveLock.acquire()
+                logging.debug('answerSaveLock.')
                 self.zhihuConn.execute('''insert into zhihu
                                 values(?,?,?);''',(question,href,vote_up))
                 self.zhihuConn.commit()
+                self.channel.answerSaveLock.release()
+                logging.debug('answerSaveUNLock.')
                 logging.info('%s  URL:%s  vote_up:%d,Successfully saved.'%(question,href,vote_up))
         #tag finish
+        self.channel.tagSetLock.acquire()
+        logging.debug('tagSetLock.')
         self.tagUrlSet.add(tag.tagUrl)
+        self.channel.tagSetLock.release()
         url = tag.tagUrl.replace("'","''")
+        self.channel.tagSaveLock.acquire()
+        logging.debug('tagSetUnLock.')
         self.tagConn.execute('''update tagUrlSet set checked = 1
                                 where url = '%s';'''%(url))
         self.tagConn.commit()
+        self.channel.tagSaveLock.release()
         logging.info('Tag:%s is done.'%(tag.tagName))
  

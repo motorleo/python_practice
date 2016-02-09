@@ -15,9 +15,7 @@ for item in cursor:
 
 
 cursor = tagconn.execute('''select name,url,checked from tagUrlSet 
-                            where checked = 1;''')
-cursor = tagconn.execute('''select name,url,checked from tagUrlSet 
-                            where url = 'https://www.zhihu.com/topic/19552162';''')
+                            where checked = 0;''')
 
 for item in cursor:
     print 'name:',item[0]
@@ -28,7 +26,8 @@ count = conn.execute('''select count(*) from zhihu;''')
 for i in count:
     print i[0]
 
-count = tagconn.execute('''select count(*) from tagUrlSet;''')
+count = tagconn.execute('''select count(*) from tagUrlSet
+                            where checked = 0;''')
 for i in count:
     print i[0]
 

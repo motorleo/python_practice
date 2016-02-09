@@ -69,7 +69,7 @@ class TagSearcher:
                                       where checked = 0;''')
         for tag in cursor:
             self.queue.put(TagItem(tag[0],tag[1]))
-            logging.debug('Put tag %s in queue.'%(tag[0]))
+            #logging.debug('Put tag %s in queue.'%(tag[0]))
 
     def getID(self):
         #exit when open fail
@@ -77,7 +77,7 @@ class TagSearcher:
         if response is None:
             logging.warning('Error When Getting ID.')
             exit()
-        IDsoup = BeautifulSoup(response.read())
+        IDsoup = BeautifulSoup(response)
         #if error then abort
         self.ID = IDsoup.find(
                 'ul',class_='zm-topic-cat-main clearfix').find_all('li')
@@ -101,7 +101,7 @@ class TagSearcher:
             result = self.channel.postOpen(topicsUrl,data)
             if result is None:#open fail
                 break
-            result = result.read().decode("unicode-escape").replace('\\','')
+            result = result.decode("unicode-escape").replace('\\','')
             soup = BeautifulSoup(result)
             tags = soup.find_all('div',class_='item')
             if len(tags) != 20:
@@ -110,15 +110,18 @@ class TagSearcher:
             for tag in tags:
                 tagName = tag.strong.string
                 tagUrl = 'https://www.zhihu.com' + tag.a['href'].replace('\\','')
+                self.channel.tagSetLock.acquire()
                 if tagUrl in self.tagUrlSet:
+                    self.channel.tagSetLock.release()
                     continue
+                self.channel.tagSetLock.release()
                 self.queue.put(TagItem(tagName,tagUrl)) 
                 self.conn.execute('''insert into tagUrlSet
                                    values(?,?,0);''',(tagName,tagUrl))
-                logging.debug('Put tag %s in queue.'%(tagName))
+                #logging.debug('Put tag %s in queue.'%(tagName))
             #done
             self.conn.commit()
-            time.sleep(1)
+            time.sleep(0.5)#avoid lock
 
 class TagItem:
     def __init__(self,tagName,tagUrl):
