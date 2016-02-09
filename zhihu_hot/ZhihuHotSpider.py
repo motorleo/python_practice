@@ -19,7 +19,7 @@ class ZhihuHotSpider:
         #build threads
         for i in range(0,threadNum):
             thread = DatamineThread(channel)
-            thread.deamon = True
+            thread.setDaemon(True)
             thread.start()
         try:
             #put tag in queue
@@ -43,7 +43,7 @@ def main():
     if len(sys.argv) < 3:
         print 'Please Enter The Email And The Password.'
         exit()
-    spider = ZhihuHotSpider(9)#n thread
+    spider = ZhihuHotSpider(16)#n thread
 
 if __name__ == '__main__':
     main()

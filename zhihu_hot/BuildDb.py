@@ -11,7 +11,7 @@ conn.execute('''drop table zhihu''')
 conn.execute('''create table zhihu
                     (question varchar(100) not null,
                     url varchar(100) not null,
-                    vote_up varchar(10) not null);''')
+                    vote_up int not null);''')
 conn.commit()
 conn.close()
 
@@ -25,5 +25,5 @@ conn.commit()
 conn.close()
 
 
-#os.remove('CurrentSearch.data')
-#os.remove('zhihu.log')
+os.remove('CurrentSearch.data')
+os.remove('zhihu.log')
